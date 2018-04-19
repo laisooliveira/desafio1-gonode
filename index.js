@@ -15,8 +15,8 @@ app.set('view engine', 'njk');
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const verificaDados = (req, res) => {
-  if ((req.body.nome || req.body.idade) === undefined) {
+const verificaDados = (req, res, next) => {
+  if ((req.query.nome || req.query.idade) === undefined) {
     res.redirect('/');
   }
   else{
@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
   res.render('main');
 });
 
-app.get('/major?nome&idade', verificaDados, (req, res) => {
+app.get('/major', verificaDados, (req, res) => {
   res.render('major', { nome: req.query.nome });
 });
 
@@ -37,15 +37,16 @@ app.get('/minor', verificaDados, (req, res) => {
 });
 
 app.post('/check', (req, res) => {
+
   if ( !req.body.nome || !req.body.data ) {
     res.redirect('/');
   }
-  const { nome, data } = req.body;
-  const idade = moment().diff(moment(data, 'DD/MM/YYYY'), 'years');
+  const data = moment(req.body.data, 'DD/MM/YYYY');
+  const idade = moment().diff(data, 'years');
   if (idade >= 18) {
-    res.redirect(`/major?nome=${nome}`);
-  } else if (idade < 18) {
-    res.redirect(`/minor?nome=${nome}`);
+    res.redirect(`/major?nome=${req.body.nome}`);
+  } else {
+    res.redirect(`/minor?nome=${req.body.nome}`);
   }
 });
 
