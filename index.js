@@ -17,7 +17,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 const verificaDados = (req, res) => {
   if ((req.body.nome || req.body.idade) === undefined) {
-    res.render('main');
+    res.redirect('/');
+  }
+  else{
+    next();
   }
 };
 
@@ -25,21 +28,24 @@ app.get('/', (req, res) => {
   res.render('main');
 });
 
-app.get('/major', verificaDados, (req, res) => {
-  res.render('major', {});
+app.get('/major?nome&idade', verificaDados, (req, res) => {
+  res.render('major', { nome: req.query.nome });
 });
 
 app.get('/minor', verificaDados, (req, res) => {
-  res.render('minor');
+  res.render('minor', { nome: req.query.nome });
 });
 
 app.post('/check', (req, res) => {
+  if ( !req.body.nome || !req.body.data ) {
+    res.redirect('/');
+  }
   const { nome, data } = req.body;
   const idade = moment().diff(moment(data, 'DD/MM/YYYY'), 'years');
   if (idade >= 18) {
-    res.render('major', { nome, idade });
+    res.redirect(`/major?nome=${nome}`);
   } else if (idade < 18) {
-    res.render('minor', { nome, idade });
+    res.redirect(`/minor?nome=${nome}`);
   }
 });
 
